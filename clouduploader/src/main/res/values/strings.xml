@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">clouduploader</string>
+
+
+    <string name="hello_world">Hello world!</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_account_manager">Account</string>
+
+    <string name="title_activity_login">LoginActivity</string>
+
+    <string name="login_dropbox">Login Dropbox</string>
+    <string name="unlink_dropbox">Unlink Dropbox</string>
+
+    <string name="prefs_dropbox_token">Dropbox_Access_Token</string>
+    <string name="prefs_googledrive_folder">Google_drive_folder_driveid</string>
+
+    <string name="title_activity_splash_screen">SplashScreen</string>
+
+    <string name="extra_dropbox_app_id_request">extra_dp_app_id</string>
+    <string name="extra_dropbox_app_secret_request">extra_dp_app_secret</string>
+</resources>

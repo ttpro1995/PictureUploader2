@@ -1,0 +1,19 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.hahattpro.pictureuploader.CloudUploaderPack.LoginActivity"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/button_login_dropbox"
+        android:text="test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/button_login_GoogleDrive"
+        android:text="GoogleDrive"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>
