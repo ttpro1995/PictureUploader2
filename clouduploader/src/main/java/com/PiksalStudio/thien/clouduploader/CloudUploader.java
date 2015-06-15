@@ -7,10 +7,13 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.ProgressListener;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
@@ -63,6 +66,9 @@ public class CloudUploader {
     private String Dropbox_AppId=null;
     private String Dropbox_AppSecret=null;
 
+    //Handler
+    private Handler dropbox_mHandler=null;
+    private Handler googledriver_mHandle=null;
 
     //google drive
     GoogleApiClient mGoogleApiClient;
@@ -99,19 +105,19 @@ public class CloudUploader {
         context.startActivity(intent);
     }
 
-    public void UploadFileDropbox(String Name, InputStream is, Long Length ){
+    public void UploadFileDropbox(String Name, InputStream is, Long Length, Handler handler){
             this.File_Name = Name;
             this.File_length = Length;
             this.inputStream = is;
-
+            this.dropbox_mHandler = handler;
         new LoginDropboxAndUpload().execute();
     }
 
-    public void UploadFileGoogleDrive(String Name, InputStream is, Long Length ){
+    public void UploadFileGoogleDrive(String Name, InputStream is, Long Length, Handler handler ){
         this.File_Name = Name;
         this.File_length = Length;
         this.inputStream = is;
-
+        this.googledriver_mHandle = handler;
         new UploadGoogleDrive().execute();
     }
 
@@ -177,7 +183,7 @@ public class CloudUploader {
                 if (Dropbox_token == null) {
                     tmp = tmp + "Dropbox is not linked";
                 }
-
+                dropbox_failed_handle();
                 Log.e(DROPBOX_LOG_TAG,tmp);
             }
 
@@ -185,7 +191,7 @@ public class CloudUploader {
     }
 
     //Upload select picture (which is shown on image view to dropbox
-    private class UploadPicture_Dropbox extends AsyncTask<Void, Void, Void> {
+    private class UploadPicture_Dropbox extends AsyncTask<Void, Long, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -196,82 +202,66 @@ public class CloudUploader {
         @Override
         protected Void doInBackground(Void... voids) {
 
-           /* if (CURRENT_REQUEST == SELECT_PICTURE)
-            try {
-                //File file = new File(getRealPathFromURI(pic_uri));
-                InputStream is = getContentResolver().openInputStream(pic_uri);
-
-                Log.i(LOG_TAG, "File name = " + getFileName(pic_uri));
-                Log.i(LOG_TAG, "File size = " + getFileSize(pic_uri));
-
-                //upload to dropbox
-                Dropbox_mApi.putFile(Dir.PICTURE_DIR + getFileName(pic_uri)
-                        , is
-                        , getFileSize(pic_uri)
-                        , null
-                        , null);
-            } catch (FileNotFoundException e) {
-                Log.e(LOG_TAG, "FILE_NOT_FOUND");
-                error_Dropbox = true;
-            } catch (DropboxException e) {
-                Log.e(LOG_TAG, "DROPBOX_ERROR");
-                error_Dropbox = true;
-            } catch (NullPointerException e) {
-                Log.e(LOG_TAG, "no picture is selected");
-                e.printStackTrace();
-                error_Dropbox = true;
-            }
 
 
-            if (CURRENT_REQUEST == CAPTURE_IMAGE)
-                try{
-                    File myFile = new File(pic_uri.getPath());
-                    InputStream is = new FileInputStream(myFile);
-                    Dropbox_mApi.putFile(Dir.PICTURE_DIR +myFile.getName()
-                            , is
-                            , myFile.length()
-                            , null
-                            , null);
-                }
-                catch (FileNotFoundException er){er.printStackTrace();}
-                catch (DropboxException er){ er.printStackTrace();}
-*/
             /////////////////////////
             try {
 
                 CopyInputStream copyInputStream = new CopyInputStream(inputStream);//init copyInputStream
                 inputStream = copyInputStream.getCopy();//restore source inputstream
 
-                Log.d(DROPBOX_LOG_TAG,"File Name = "+File_Name);
+                Log.d(DROPBOX_LOG_TAG, "File Name = " + File_Name);
                 Log.d(DROPBOX_LOG_TAG, "File length = " + File_length);
+
 
 
                 InputStream tmpis = copyInputStream.getCopy();//create tmp inputstream
                 Dropbox_mApi.putFile(File_Name // path in drop box
                         , tmpis //input stream
                         , File_length //file.length()
-                        , null
-                        , null);
+                        ,null
+                        ,null);
 
 
             }
             catch (DropboxException e){ e.printStackTrace();
-                error_Dropbox = true;
+                    error_Dropbox = true;
+
             }
             return null;
         }
 
+
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            Log.i(DROPBOX_LOG_TAG, "Dropbox Upload Complete");
+            if (!error_Dropbox ) {
+                Log.i(DROPBOX_LOG_TAG, "Dropbox Upload Complete");
+                dropbox_ok_handle();
+            }
+            else {
+               dropbox_failed_handle();
 
-
+            }
 
 
         }
     }
 
+    private void dropbox_failed_handle(){
+        Message message = new Message();
+        message.arg1 = -1;//error
+        dropbox_mHandler.sendMessage(message);
+        dropbox_mHandler=null;
+    }
+
+    private void dropbox_ok_handle(){
+        Message message = new Message();
+        message.arg1 = 1;//upload success
+        dropbox_mHandler.sendMessage(message);
+        dropbox_mHandler=null;
+    }
 
     //-------------------------------------------
 
@@ -297,31 +287,6 @@ public class CloudUploader {
             }
             catch (InterruptedException e){}
 
-
-
-
-/*
-            if (CURRENT_REQUEST == SELECT_PICTURE)
-                try {
-                    //File file = new File(getRealPathFromURI(pic_uri));
-                    InputStream is = getContentResolver().openInputStream(pic_uri);
-
-                    Log.i(LOG_TAG, "File name = " + getFileName(pic_uri));
-                    Log.i(LOG_TAG, "File size = " + getFileSize(pic_uri));
-
-                    SaveFileToDrive(getFileName(pic_uri),is);
-
-                } catch (FileNotFoundException e) {e.printStackTrace();}
-                catch (Exception e) {e.printStackTrace();}
-
-            if (CURRENT_REQUEST == CAPTURE_IMAGE)
-                try{
-                    File myFile = new File(pic_uri.getPath());
-                    InputStream is = new FileInputStream(myFile);
-                    SaveFileToDrive(myFile.getName(),is);
-                }
-                catch (FileNotFoundException er){er.printStackTrace();}
-                catch (Exception e){e.printStackTrace();}*/
 
             CopyInputStream copyInputStream = new CopyInputStream(inputStream);
             inputStream = copyInputStream.getCopy();//restore source inputstream
@@ -379,6 +344,9 @@ public class CloudUploader {
                             // fail.
                             if (!result.getStatus().isSuccess()) {
                                 Log.i(GOOGLEDRIVE_LOG_TAG, "Failed to create new contents.");
+
+
+
                                 return;
                             }
                             // Otherwise, we can write our data to the new contents.
@@ -430,10 +398,13 @@ public class CloudUploader {
                     public void onResult(DriveFolder.DriveFileResult result) {
                         if (!result.getStatus().isSuccess()) {
                             Log.e(GOOGLEDRIVE_LOG_TAG,"Error while trying to create the file");
+                            google_drive_failed_handle();
                             return;
                         }
                         Log.i(GOOGLEDRIVE_LOG_TAG,"Created a file  "
                                 + result.getDriveFile().getDriveId());
+                        google_drive_ok_handle();//google drive upload ok
+
                     }
                 };
 
@@ -443,6 +414,7 @@ public class CloudUploader {
             public void onResult(DriveFolder.DriveFolderResult result) {
                 if (!result.getStatus().isSuccess()) {
                     Log.e(GOOGLEDRIVE_LOG_TAG,"Error while trying to create the folder");
+                   google_drive_failed_handle();
                     return;
                 }
                 Log.i(GOOGLEDRIVE_LOG_TAG, "Created a folder: " + result.getDriveFolder().getDriveId());
@@ -470,6 +442,7 @@ public class CloudUploader {
                     } catch (IntentSender.SendIntentException e) {
                         // Unable to resolve, message user appropriately
                         Log.i(GOOGLEDRIVE_LOG_TAG, "something wrong");
+                        google_drive_failed_handle();//failed
                         e.printStackTrace();
                     }
                 } else {
@@ -502,7 +475,26 @@ public class CloudUploader {
         mGoogleApiClient.connect();
     }
 
+    private void google_drive_failed_handle()
+    {
+        Message failed_message = new Message();
+        failed_message.arg1=-1;
 
+        if (googledriver_mHandle!=null) {
+            googledriver_mHandle.sendMessage(failed_message);
+            googledriver_mHandle = null;
+        }
+    }
+    private void google_drive_ok_handle()
+    {
+        Message message = new Message();
+        message.arg1=1;
+        if (googledriver_mHandle!=null)
+        {
+            googledriver_mHandle.sendMessage(message);
+            googledriver_mHandle=null;
+        }
+    }
     //----------------//
 
 }
