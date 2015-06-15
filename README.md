@@ -1,0 +1,1 @@
+Please read how to use clouduploader module [here](https://github.com/ttpro1995/PictureUploader2/blob/master/clouduploader/DOCUMENT/CloudUploader%20document.pdf)

@@ -102,21 +102,28 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (msg.arg1==1)
-                    Log.i("DROPBOX HANDLER","Upload ok");
-                if (msg.arg1==-1)
-                    Log.i("DROPBOX HANDLER","Upload failed");
-
+                if (msg.arg1==1) {
+                    Log.i("DROPBOX HANDLER", "Upload ok");
+                    //do something when upload finished
+                }
+                if (msg.arg1==-1) {
+                    Log.i("DROPBOX HANDLER", "Upload failed");
+                    //do something when upload failed
+                }
             }
         };
         google_drive_handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (msg.arg1==1)
-                    Log.i("GOOGLE DRIVE HANDLER","Upload ok");
-                if (msg.arg1==-1)
-                    Log.i("GOOGLE DRIVE","Upload failed");
+                if (msg.arg1==1) {
+                    Log.i("GOOGLE DRIVE HANDLER", "Upload ok");
+                    //do something when upload finished
+                }
+                if (msg.arg1==-1) {
+                    Log.i("GOOGLE DRIVE", "Upload failed");
+                    //do something when upload failed
+                }
             }
         };
 
