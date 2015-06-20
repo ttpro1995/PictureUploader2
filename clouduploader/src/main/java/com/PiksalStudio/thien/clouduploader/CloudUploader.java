@@ -123,7 +123,7 @@ public class CloudUploader {
 
 
     /*Change default account which is use for Google Drive
-    * In activity, Must implement
+    * In activity, must implement
         @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
