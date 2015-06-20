@@ -82,6 +82,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
 
+
         Log.i(LOG_TAG,"Keep calm and meow on");
 
         imageView = (ImageView) findViewById(R.id.imageview1);
@@ -129,6 +130,11 @@ public class MainActivity extends ActionBarActivity {
 
 
         cloudUploader = new CloudUploader(MainActivity.this,Dir.PICTURE_DIR, AppIDandSecret.AppID_Dropbox,AppIDandSecret.Secret_Dropbox);
+
+        //TODO: test here///////
+        cloudUploader.LoginDropbox();
+
+        ////////please delete test /////////
 
         buttonSelect.setOnClickListener(new View.OnClickListener() {
             @Override

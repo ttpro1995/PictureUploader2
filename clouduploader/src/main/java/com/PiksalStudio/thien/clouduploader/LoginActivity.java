@@ -39,6 +39,10 @@ public class LoginActivity extends ActionBarActivity {
     String Dropbox_AppId=null;
     String Dropbox_AppSecret=null;
 
+    //OneDrive
+    String OneDrive_ClientID = null;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,7 +196,8 @@ public class LoginActivity extends ActionBarActivity {
                 Log.i(GOOGLEDRIVE_LOG_TAG,"onConnectionFailed");
                 if (connectionResult.hasResolution()) {
                     try {
-                        //For first login when user choose account
+                        //For first login when user choose account then ask for permission
+                        //must call onActivityResult
                         connectionResult.startResolutionForResult(LoginActivity.this, GOOGLE_DRIVE_LOGIN_REQUEST_CODE);
                     } catch (IntentSender.SendIntentException e) {
                         // Unable to resolve, message user appropriately

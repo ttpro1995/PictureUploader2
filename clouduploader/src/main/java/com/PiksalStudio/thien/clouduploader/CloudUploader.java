@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.dropbox.client2.DropboxAPI;
@@ -26,6 +27,7 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,9 +73,9 @@ public class CloudUploader {
     private Handler googledriver_mHandle=null;
 
     //google drive
-    GoogleApiClient mGoogleApiClient;
-    GoogleApiClient.OnConnectionFailedListener onConnectionFailedListener;
-    GoogleApiClient.ConnectionCallbacks connectionCallbacks;
+    GoogleApiClient mGoogleApiClient = null;
+    GoogleApiClient.OnConnectionFailedListener onConnectionFailedListener= null;
+    GoogleApiClient.ConnectionCallbacks connectionCallbacks=null;
     final int GOOGLE_DRIVE_LOGIN_REQUEST_CODE = 100;
 
 
@@ -104,6 +106,70 @@ public class CloudUploader {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
+
+    /*
+    * LoginDropbox will open device web browser, ask user to login, ask for permission, and store dropbox_token
+    * After login successfully with LoginDropbox ( use  public boolean Dropbox_isLogin() to check)
+    *   you can upload thing to dropbox
+    * */
+    public void LoginDropbox()
+    {
+        Intent intent = new Intent(context,LoginDropboxActivity.class);
+        intent.putExtra(context.getResources().getString(R.string.extra_dropbox_app_id_request),Dropbox_AppId);
+        intent.putExtra(context.getResources().getString(R.string.extra_dropbox_app_secret_request),Dropbox_AppSecret);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+
+    /*Change default account which is use for Google Drive
+    * In activity, Must implement
+        @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Google_API_request_code)
+            if (resultCode==RESULT_OK) {
+                mGoogleApiClient.connect();
+                Log.i("google","result ok");
+            }
+    }
+    */
+    public GoogleApiClient SelectGoogleAccount(int Google_API_request_code){
+
+        if (mGoogleApiClient!=null&&mGoogleApiClient.isConnected())
+            mGoogleApiClient.clearDefaultAccountAndReconnect();
+        else
+        LoginGoogleDrive(Google_API_request_code);
+        return mGoogleApiClient;
+    }
+
+
+    /*
+    * Check if dropbox is logined
+    * When this function return true, you can use  public void UploadFileDropbox(String Name, InputStream is, Long Length, Handler handler)
+    * */
+    public boolean Dropbox_isLogin(){
+        //TODO: test Dropbox_isLogin
+        Log.d(DROPBOX_LOG_TAG, "start_isLogin");
+        String tmp_DP_TOKEN = prefs.getString(context.getResources().getString(R.string.prefs_dropbox_token) ,null);
+        Log.d(DROPBOX_LOG_TAG,"isLogin token key ="+tmp_DP_TOKEN);
+        //if no dp_token then dropbox is not login
+        if (tmp_DP_TOKEN==null) {
+            return false;
+        }
+        //check if dropbox token is valid
+        AndroidAuthSession session = buildSession();
+        Dropbox_mApi = new DropboxAPI<AndroidAuthSession>(session);
+        Dropbox_mApi.getSession().setOAuth2AccessToken(tmp_DP_TOKEN);
+        if (Dropbox_mApi.getSession().isLinked()) {
+            Log.d(DROPBOX_LOG_TAG,"end_isLogin, return true");
+            return true;
+        }
+        Log.d(DROPBOX_LOG_TAG, "end_isLogin return false");
+        return false;
+    }
+
+
 
     public void UploadFileDropbox(String Name, InputStream is, Long Length, Handler handler){
             this.File_Name = Name;
@@ -280,7 +346,7 @@ public class CloudUploader {
 
         @Override
         protected Void doInBackground(Void... params) {
-            LoginGoogleDrive();//start connecting to google api
+            LoginGoogleDrive(GOOGLE_DRIVE_LOGIN_REQUEST_CODE);//start connecting to google api
             try {//wait for it
                 while (mGoogleApiClient==null||!mGoogleApiClient.isConnected())
                     Thread.sleep(100);
@@ -429,7 +495,7 @@ public class CloudUploader {
     }
 
     //Connect to google api (maybe it is run its own thread ?)
-    private void LoginGoogleDrive() {
+    private void LoginGoogleDrive(@Nullable final int  Google_api_request_code) {
 
         //It is auto-gen constructor
         onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
@@ -438,7 +504,9 @@ public class CloudUploader {
                 Log.i(GOOGLEDRIVE_LOG_TAG, "onConnectionFailed");
                 if (connectionResult.hasResolution()) {
                     try {
-                        connectionResult.startResolutionForResult(activity, GOOGLE_DRIVE_LOGIN_REQUEST_CODE);
+                        //Must implement onActivityResult
+                        //google api will ask for user permission in first time
+                        connectionResult.startResolutionForResult(activity, Google_api_request_code);
                     } catch (IntentSender.SendIntentException e) {
                         // Unable to resolve, message user appropriately
                         Log.i(GOOGLEDRIVE_LOG_TAG, "something wrong");
@@ -472,6 +540,7 @@ public class CloudUploader {
                 .addConnectionCallbacks(connectionCallbacks)
                 .addOnConnectionFailedListener(onConnectionFailedListener)
                 .build();
+
         mGoogleApiClient.connect();
     }
 
