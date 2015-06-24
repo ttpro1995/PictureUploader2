@@ -1,4 +1,4 @@
-package com.PiksalStudio.thien.clouduploader;
+package com.piksalstudio.thien.clouduploader;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,7 +14,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.ProgressListener;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
@@ -138,8 +137,9 @@ public class CloudUploader {
 
         if (mGoogleApiClient!=null&&mGoogleApiClient.isConnected())
             mGoogleApiClient.clearDefaultAccountAndReconnect();
-        else
-        LoginGoogleDrive(Google_API_request_code);
+        else {
+            LoginGoogleDrive(Google_API_request_code);
+        }
         return mGoogleApiClient;
     }
 

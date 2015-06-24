@@ -1,4 +1,4 @@
-package com.PiksalStudio.thien.clouduploader;
+package com.piksalstudio.thien.clouduploader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,16 +1,12 @@
-package com.PiksalStudio.thien.clouduploader;
+package com.piksalstudio.thien.clouduploader;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
 
 import com.dropbox.client2.DropboxAPI;
@@ -30,6 +26,8 @@ public class LoginDropboxActivity extends Activity {
     private String LOG_TAG = LoginDropboxActivity.class.getSimpleName();
     private String Dropbox_token = null;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +42,7 @@ public class LoginDropboxActivity extends Activity {
         Dropbox_AppSecret = intent.getExtras().getString(getResources().getString(R.string.extra_dropbox_app_secret_request));
 
         //TODO :fix here login dropbox activity
-            new LoginDropbox().execute();
+           new LoginDropbox().execute();
 
 
     }

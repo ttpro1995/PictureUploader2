@@ -1,4 +1,4 @@
-package com.PiksalStudio.thien.clouduploader;
+package com.piksalstudio.thien.clouduploader;
 
 import android.content.Intent;
 import android.content.IntentSender;
@@ -81,7 +81,14 @@ public class LoginActivity extends ActionBarActivity {
         buttonLoginGoogleDrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LoginGoogleDrive();
+                //LoginGoogleDrive();
+
+                if (mGoogleApiClient!=null&&mGoogleApiClient.isConnected())
+                    mGoogleApiClient.clearDefaultAccountAndReconnect();
+                else {
+                    LoginGoogleDrive();
+                }
+
             }
         });
 

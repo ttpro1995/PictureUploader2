@@ -1,4 +1,4 @@
-package com.PiksalStudio.thien.clouduploader;
+package com.piksalstudio.thien.clouduploader;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

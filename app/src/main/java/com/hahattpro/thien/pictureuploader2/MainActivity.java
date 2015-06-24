@@ -13,7 +13,6 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,7 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import com.PiksalStudio.thien.clouduploader.CloudUploader;
+import com.piksalstudio.thien.clouduploader.CloudUploader;
 import com.hahattpro.thien.pictureuploader2.StaticField.AppIDandSecret;
 import com.hahattpro.thien.pictureuploader2.StaticField.Dir;
 
@@ -131,10 +130,7 @@ public class MainActivity extends ActionBarActivity {
 
         cloudUploader = new CloudUploader(MainActivity.this,Dir.PICTURE_DIR, AppIDandSecret.AppID_Dropbox,AppIDandSecret.Secret_Dropbox);
 
-        //TODO: test here///////
-        cloudUploader.LoginDropbox();
 
-        ////////please delete test /////////
 
         buttonSelect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,11 +144,11 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View view) {
                 //new LoginDropboxAndUpload().execute();
 
+                cloudUploader.UploadFileGoogleDrive(File_Name,inputStream,File_length,google_drive_handler);
 
                 cloudUploader.UploadFileDropbox(File_Name, inputStream, File_length,dropbox_handler);
 
-                //new UploadGoogleDrive().execute();
-                cloudUploader.UploadFileGoogleDrive(File_Name,inputStream,File_length,google_drive_handler);
+
 
 
             }
@@ -199,10 +195,10 @@ public class MainActivity extends ActionBarActivity {
 
     //go to activity where you will login, get access token
     private void GoToAccountManager() {
-        /*Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        startActivity(intent);*/
+       Intent intent = new Intent(MainActivity.this, LoginScreen.class);
+        startActivity(intent);
 
-        cloudUploader.StartLoginActivity();
+
     }
 
 

@@ -6,6 +6,7 @@
     <string name="action_account_manager">Account</string>
 
     <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="title_activity_login_screen">LoginScreen</string>
 
 
 </resources>
