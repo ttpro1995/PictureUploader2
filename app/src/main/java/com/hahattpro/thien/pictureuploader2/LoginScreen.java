@@ -22,6 +22,7 @@ public class LoginScreen extends Activity {
     CloudUploader cloudUploader = null;
     GoogleApiClient mGoogleApiClient = null;
     int GOOGLE_API_REQUEST_CODE= 1234;
+    int ACCOUNT_PICKER_REQUEST_CODE = 1567;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +41,7 @@ public class LoginScreen extends Activity {
         selectGoogleDrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               mGoogleApiClient = cloudUploader.SelectGoogleAccount(GOOGLE_API_REQUEST_CODE);
+                cloudUploader.SelectGoogleAccount(ACCOUNT_PICKER_REQUEST_CODE);
             }
         });
 
@@ -56,9 +57,12 @@ public class LoginScreen extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ACCOUNT_PICKER_REQUEST_CODE)
+          mGoogleApiClient = cloudUploader.LoginGoogleDrive(GOOGLE_API_REQUEST_CODE,data);
+
         if (requestCode == GOOGLE_API_REQUEST_CODE)
             if (resultCode == RESULT_OK)
-                mGoogleApiClient.connect();
+            mGoogleApiClient.connect();
     }
 
     @Override

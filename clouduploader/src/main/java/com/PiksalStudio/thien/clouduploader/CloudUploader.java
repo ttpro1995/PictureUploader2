@@ -1,5 +1,6 @@
 package com.piksalstudio.thien.clouduploader;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
+import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -133,15 +135,11 @@ public class CloudUploader {
             }
     }
     */
-    public GoogleApiClient SelectGoogleAccount(int Google_API_request_code){
-
-        if (mGoogleApiClient!=null&&mGoogleApiClient.isConnected())
-            mGoogleApiClient.clearDefaultAccountAndReconnect();
-        else {
-            LoginGoogleDrive(Google_API_request_code);
+    public void SelectGoogleAccount(int ACCOUNT_PICKER_request_code){
+            Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
+                    false, null, null, null, null);
+            activity.startActivityForResult(intent, ACCOUNT_PICKER_request_code);
         }
-        return mGoogleApiClient;
-    }
 
 
     /*
@@ -428,23 +426,7 @@ public class CloudUploader {
                             } catch (IOException e1) {
                                 Log.i(GOOGLEDRIVE_LOG_TAG, "Unable to write file contents.");
                             }
-                            // Create the initial metadata - MIME type and title.
-                            // Note that the user will be able to change the title later.
 
-                            // Create an intent for the file chooser, and start it.
-                            /*
-                            IntentSender intentSender = Drive.DriveApi
-                                    .newCreateFileActivityBuilder()
-                                    .setInitialMetadata(metadataChangeSet)
-                                    .setInitialDriveContents(result.getDriveContents())
-                                    .build(mGoogleApiClient);
-                            try {
-                                startIntentSenderForResult(
-                                        intentSender, 0, null, 0, 0, 0);
-                            } catch (IntentSender.SendIntentException e) {
-                                Log.i(GOOGLEDRIVE_LOG_TAG, "Failed to launch file chooser.");
-                            }
-                            */
 
 
                             //Create a file at root folder
@@ -494,9 +476,8 @@ public class CloudUploader {
         };
     }
 
-    //Connect to google api (maybe it is run its own thread ?)
+    //Connect to google api with default account
     private void LoginGoogleDrive(@Nullable final int  Google_api_request_code) {
-
         //It is auto-gen constructor
         onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
             @Override
@@ -518,7 +499,6 @@ public class CloudUploader {
                 }
             }
         };
-
         //It is auto-gen constructor
         connectionCallbacks = new GoogleApiClient.ConnectionCallbacks() {
             @Override
@@ -540,8 +520,107 @@ public class CloudUploader {
                 .addConnectionCallbacks(connectionCallbacks)
                 .addOnConnectionFailedListener(onConnectionFailedListener)
                 .build();
-
         mGoogleApiClient.connect();
+    }
+
+    //Connect to google api using AccountName (email)
+    private void LoginGoogleDrive(@Nullable final int  Google_api_request_code, String AccountName) {
+        //It is auto-gen constructor
+        onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
+            @Override
+            public void onConnectionFailed(ConnectionResult connectionResult) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnectionFailed");
+                if (connectionResult.hasResolution()) {
+                    try {
+                        //Must implement onActivityResult
+                        //google api will ask for user permission in first time
+                        connectionResult.startResolutionForResult(activity, Google_api_request_code);
+                    } catch (IntentSender.SendIntentException e) {
+                        // Unable to resolve, message user appropriately
+                        Log.i(GOOGLEDRIVE_LOG_TAG, "something wrong");
+                        google_drive_failed_handle();//failed
+                        e.printStackTrace();
+                    }
+                } else {
+                    GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(),activity, 0).show();
+                }
+            }
+        };
+        //It is auto-gen constructor
+        connectionCallbacks = new GoogleApiClient.ConnectionCallbacks() {
+            @Override
+            public void onConnected(Bundle bundle) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnected call back");
+            }
+
+            @Override
+            public void onConnectionSuspended(int i) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnectionSuspended call back");
+            }
+        };
+
+        //link google account (will appear account chooser)
+        mGoogleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addScope(Drive.SCOPE_APPFOLDER)
+                .setAccountName(AccountName)
+                .addConnectionCallbacks(connectionCallbacks)
+                .addOnConnectionFailedListener(onConnectionFailedListener)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+    //Connect to google api
+    // data is Intent data from OnActivityResult
+    public GoogleApiClient LoginGoogleDrive(@Nullable final int  Google_api_request_code, Intent data) {
+        //It is auto-gen constructor
+        onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
+            @Override
+            public void onConnectionFailed(ConnectionResult connectionResult) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnectionFailed");
+                if (connectionResult.hasResolution()) {
+                    try {
+                        //Must implement onActivityResult
+                        //google api will ask for user permission in first time
+                        connectionResult.startResolutionForResult(activity, Google_api_request_code);
+                    } catch (IntentSender.SendIntentException e) {
+                        // Unable to resolve, message user appropriately
+                        Log.i(GOOGLEDRIVE_LOG_TAG, "something wrong");
+                        google_drive_failed_handle();//failed
+                        e.printStackTrace();
+                    }
+                } else {
+                    GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(),activity, 0).show();
+                }
+            }
+        };
+        //It is auto-gen constructor
+        connectionCallbacks = new GoogleApiClient.ConnectionCallbacks() {
+            @Override
+            public void onConnected(Bundle bundle) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnected call back");
+            }
+
+            @Override
+            public void onConnectionSuspended(int i) {
+                Log.i(GOOGLEDRIVE_LOG_TAG, "onConnectionSuspended call back");
+            }
+        };
+
+        String AccountName= data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+
+        //link google account (will appear account chooser)
+        mGoogleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addScope(Drive.SCOPE_APPFOLDER)
+                .setAccountName(AccountName)
+                .addConnectionCallbacks(connectionCallbacks)
+                .addOnConnectionFailedListener(onConnectionFailedListener)
+                .build();
+        mGoogleApiClient.connect();
+        return mGoogleApiClient;
     }
 
     private void google_drive_failed_handle()
